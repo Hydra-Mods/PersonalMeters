@@ -36,7 +36,7 @@ local strsplit = strsplit
 local MyGUID = UnitGUID("player")
 local MeleeName = ACTION_SWING
 local Pets = {}
-local BarFactory = {FreePlayers = {}, ActivePlayers = {}, FreeSpells = {}, ActiveSpells = {}}
+local BarFactory = {FreePlayers = {}, ActivePlayers = {}, FreeSpells = {}}
 local CombatTime = 0
 local LastCombatTime = 0
 local TotalDamage = 0
@@ -380,9 +380,7 @@ end
 
 local StopTestMode = function()
 	for i = #BarFactory.ActivePlayers, 1, -1 do
-		local Bar = BarFactory.ActivePlayers[i]
-		
-		BarFactory:RecyclePlayer(Bar)
+		BarFactory:RecyclePlayer(BarFactory.ActivePlayers[i])
 	end
 	
 	Window.BarParent.BarOffset = 1
@@ -526,7 +524,7 @@ local OnUpdate = function(self, ela)
 	CombatTime = CombatTime + ela
 	Throttle = Throttle + ela
 	
-	if (Throttle > 0.5) then
+	if (Throttle > 0.2) then
 		if Window.ShowPlayers then
 			BarFactory:SortPlayers()
 		else
@@ -1065,7 +1063,7 @@ function BarFactory:RecyclePlayer(bar)
 			Bar:ClearAllPoints()
 			
 			for i = 1, #Bar.Spells do
-				self:RecycleSpell(Bar.Spells[1])
+				self:RecycleSpell(Bar, Bar.Spells[1])
 			end
 			
 			tinsert(self.FreePlayers, Bar)
@@ -1073,10 +1071,10 @@ function BarFactory:RecyclePlayer(bar)
 	end
 end
 
-function BarFactory:RecycleSpell(spell)
-	for i = 1, #self.ActiveSpells do
-		if (self.ActiveSpells[i] == spell) then
-			local Bar = tremove(self.ActiveSpells, i)
+function BarFactory:RecycleSpell(player, spell)
+	for i = 1, #player.Spells do
+		if (player.Spells[i] == spell) then
+			local Bar = tremove(player.Spells, i)
 			
 			Bar.Total = 0
 			Bar.Effective = 0

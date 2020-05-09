@@ -31,7 +31,7 @@ local sort = table.sort
 local MyGUID = UnitGUID("player")
 local MeleeName = ACTION_SWING
 local Pets = {}
-local BarFactory = {FreePlayers = {}, ActivePlayers = {}, FreeSpells = {}, ActiveSpells = {}}
+local BarFactory = {FreePlayers = {}, ActivePlayers = {}, FreeSpells = {}}
 local CombatTime = 0
 local LastCombatTime = 0
 local TotalHealing = 0
@@ -491,7 +491,7 @@ local OnUpdate = function(self, ela)
 	CombatTime = CombatTime + ela
 	Throttle = Throttle + ela
 	
-	if (Throttle > 0.5) then
+	if (Throttle > 0.2) then
 		BarFactory:Sort()
 		
 		-- Header update
@@ -906,15 +906,19 @@ function BarFactory:RecyclePlayer(bar)
 			Bar:Hide()
 			Bar:ClearAllPoints()
 			
+			for i = 1, #Bar.Spells do
+				self:RecycleSpell(Bar, Bar.Spells[1])
+			end
+			
 			tinsert(self.FreePlayers, Bar)
 		end
 	end
 end
 
-function BarFactory:RecycleSpell(bar)
-	for i = 1, #self.ActivePlayers do
-		if (self.ActivePlayers[i] == bar) then
-			local Bar = tremove(self.ActiveSpells, i)
+function BarFactory:RecycleSpell(player, spell)
+	for i = 1, #player.Spells do
+		if (player.Spells[i] == spell) then
+			local Bar = tremove(player.Spells, i)
 			
 			Bar.Total = 0
 			Bar.Effective = 0
